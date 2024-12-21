@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { pusherClient } from "@/lib/pusher";
+import { useState } from "react";
 
 type Message = {
   id: string;
@@ -15,31 +16,62 @@ type Message = {
   createdAt: Date;
 };
 
-const messages: Message[] = [
-  {
-    id: "1",
-    content: "こんにちは、User 1です。",
-    senderId: "user1-id",
-    receiverId: "user2-id",
-    createdAt: new Date(),
-  },
-  {
-    id: "2",
-    content: "こんにちは、User 2です。",
-    senderId: "user2-id",
-    receiverId: "user1-id",
-    createdAt: new Date(),
-  },
-];
+// const messages: Message[] = [
+//   {
+//     id: "1",
+//     content: "こんにちは、User 1です。",
+//     senderId: "user1-id",
+//     receiverId: "user2-id",
+//     createdAt: new Date(),
+//   },
+//   {
+//     id: "2",
+//     content: "こんにちは、User 2です。",
+//     senderId: "user2-id",
+//     receiverId: "user1-id",
+//     createdAt: new Date(),
+//   },
+// ];
 
 export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
   const { user } = useAuth();
 
   // 相手のユーザー情報（デモ用）
-  const otherUser = user?.username === "user1" ? "user2" : "user1";
+  const otherUser = user?.id === "user1-id" ? "user2" : "user1";
+  const otherUserId = user?.id === "user1-id" ? "user2-id" : "user1-id";
 
-  var channel = pusherClient.subscribe('my-channel');
-  channel.bind('my-event', function(data: any) {
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !user) return;
+
+    try {
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: newMessage,
+          receiverId: otherUserId,
+        }),
+      });
+
+      if (response.ok) {
+        setNewMessage("");
+      }
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  var channel = pusherClient.subscribe("my-channel");
+  channel.bind("my-event", function (data: any) {
     alert(JSON.stringify(data));
   });
 
@@ -85,8 +117,14 @@ export default function ChatPage() {
         {/* メッセージ入力エリア */}
         <div className="p-4 border-t">
           <div className="flex gap-2">
-            <Input placeholder="メッセージを入力..." />
-            <Button>送信</Button>
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="メッセージを入力..."
+            />
+
+            <Button onClick={sendMessage}>送信</Button>
           </div>
         </div>
       </div>

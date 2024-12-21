@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { pusherClient } from "@/lib/pusher";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Message = {
   id: string;
@@ -36,6 +36,8 @@ type Message = {
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const messageEndRef = useRef<HTMLDivElement>(null);
+
   const { user } = useAuth();
 
   // 相手のユーザー情報（デモ用）
@@ -45,7 +47,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (user) {
       fetchMessages();
-      subscribeToChatChannel(user.id)
+      subscribeToChatChannel(user.id);
     }
   }, [user]);
 
@@ -97,10 +99,16 @@ export default function ChatPage() {
 
       if (response.ok) {
         setNewMessage("");
+        scrollToBottom();
       }
     } catch (error) {
       console.error("Failed to send message:", error);
     }
+  };
+
+  // 最下部へスクロール
+  const scrollToBottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -152,6 +160,7 @@ export default function ChatPage() {
               </Card>
             </div>
           ))}
+          <div ref={messageEndRef} />
         </div>
 
         {/* メッセージ入力エリア */}

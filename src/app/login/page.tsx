@@ -4,25 +4,27 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-  const handleLogin = async (userId: string) => {
+  const handleLogin = async (id: string) => {
     try {
       setLoading(true);
-      // ログイン操作を書く
+      login(id);
       router.push("/");
     } finally {
       setLoading(false);
     }
   };
 
-  const renderLoginButton = (userId: string, label: string) => (
+  const renderLoginButton = (id: string, label: string) => (
     <Button
       className="w-full"
-      onClick={() => handleLogin(userId)}
+      onClick={() => handleLogin(id)}
       disabled={loading}
     >
       {label}

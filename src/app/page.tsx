@@ -43,19 +43,44 @@ export default function ChatPage() {
   const otherUserId = user?.id === "user1-id" ? "user2-id" : "user1-id";
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch("/api/messages");
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch messages:", error);
+    if (user) {
+      fetchMessages();
+      subscribeToChatChannel(user.id)
+    }
+  }, [user]);
+
+  const fetchMessages = async () => {
+    try {
+      const response = await fetch("/api/messages");
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
       }
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
+  };
+  const subscribeToChatChannel = (userId: string) => {
+    const channel = pusherClient.subscribe(`chat-${userId}`);
+
+    channel.bind("new-message", (data: Message) => {
+      setMessages((prev) => {
+        const messageExists = prev.some((msg) => msg.id === data.id);
+        if (messageExists) return prev;
+
+        const newMessages = [...prev, data].sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        return newMessages;
+      });
+    });
+
+    return () => {
+      channel.unbind_all();
+      pusherClient.unsubscribe(`chat-${userId}`);
     };
-    fetchMessages()
-  }, []);
+  };
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;

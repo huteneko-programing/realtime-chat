@@ -38,7 +38,7 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const messageEndRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // 相手のユーザー情報（デモ用）
   const otherUser = user?.id === "user1-id" ? "user2" : "user1";
@@ -74,6 +74,7 @@ export default function ChatPage() {
           (a, b) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
+        setTimeout(scrollToBottom, 100);
         return newMessages;
       });
     });
@@ -126,15 +127,25 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen">
       {/* サイドバー */}
-      <div className="w-64 border-r bg-gray-50 p-4">
-        <h2 className="text-lg font-semibold mb-4">コンタクト</h2>
-        <div className="flex items-center p-3 hover:bg-gray-100 rounded cursor-pointer">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>{otherUser[0].toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <span className="ml-3">{otherUser}</span>
+      <aside className="w-64 border-r bg-gray-50 p-4 flex flex-col justify-between">
+        <div>
+          <h2 className="text-lg font-semibold mb-4">コンタクト</h2>
+          <div className="flex items-center p-3 hover:bg-gray-100 rounded cursor-pointer">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback>{otherUser[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="ml-3">{otherUser}</span>
+          </div>
         </div>
-      </div>
+        <div className="mt-4">
+          <div className="text-sm text-gray-600 mb-2">
+            ログイン中: <span className="font-semibold">{user?.username}</span>
+          </div>
+          <Button variant="secondary" onClick={logout} className="w-full">
+            ログアウト
+          </Button>
+        </div>
+      </aside>
 
       {/* メインチャットエリア */}
       <div className="flex-1 flex flex-col">

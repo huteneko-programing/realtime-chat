@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from "react";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 type User = {
   id: string;
@@ -29,6 +30,7 @@ const users = [
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
   const login = (id: string) => {
     const currentUser = users.find((user) => user.id === id);
@@ -42,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     Cookies.remove("currentUser");
+    router.push("/login");
   };
 
   useEffect(() => {

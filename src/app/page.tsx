@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { pusherClient } from "@/lib/pusher";
 
 type Message = {
   id: string;
@@ -36,6 +37,11 @@ export default function ChatPage() {
 
   // 相手のユーザー情報（デモ用）
   const otherUser = user?.username === "user1" ? "user2" : "user1";
+
+  var channel = pusherClient.subscribe('my-channel');
+  channel.bind('my-event', function(data: any) {
+    alert(JSON.stringify(data));
+  });
 
   return (
     <div className="flex h-screen">

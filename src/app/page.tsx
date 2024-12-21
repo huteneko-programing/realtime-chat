@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { pusherClient } from "@/lib/pusher";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Message = {
   id: string;
@@ -41,6 +41,21 @@ export default function ChatPage() {
   // 相手のユーザー情報（デモ用）
   const otherUser = user?.id === "user1-id" ? "user2" : "user1";
   const otherUserId = user?.id === "user1-id" ? "user2-id" : "user1-id";
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch("/api/messages");
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+      }
+    };
+    fetchMessages()
+  }, []);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
